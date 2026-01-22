@@ -37,25 +37,27 @@ const NumberInput = ({
     <div className="relative flex items-center bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
       <button
         onClick={decrement}
-        className="p-3 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-gray-400 hover:text-brand-secondary"
+        className="flex items-center justify-center w-10 h-full py-3 text-gray-400 hover:text-white hover:bg-brand-secondary active:scale-90 transition-all duration-150 rounded-l-lg"
       >
         <ChevronDown className="w-4 h-4" />
       </button>
-      <input
-        type="number"
-        value={value}
-        onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-        className="w-full py-3 bg-transparent text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none"
-        min={min}
-        max={max}
-      />
+      <div className="flex-1 relative">
+        <input
+          type="number"
+          value={value}
+          onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+          className="w-full py-3 bg-transparent text-center text-lg font-bold text-brand-dark dark:text-white focus:outline-none"
+          min={min}
+          max={max}
+        />
+        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] uppercase tracking-wider text-gray-400 font-medium">{label}</span>
+      </div>
       <button
         onClick={increment}
-        className="p-3 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-gray-400 hover:text-brand-secondary"
+        className="flex items-center justify-center w-10 h-full py-3 text-gray-400 hover:text-white hover:bg-brand-secondary active:scale-90 transition-all duration-150 rounded-r-lg"
       >
         <ChevronUp className="w-4 h-4" />
       </button>
-      <span className="absolute right-10 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{label}</span>
     </div>
   );
 };
@@ -111,8 +113,8 @@ export default function PaceCalculator({ activity, distance, onPaceChange }: Pac
         <button
           onClick={() => setPaceMode('pace')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${paceMode === 'pace'
-              ? 'bg-white dark:bg-brand-dark text-brand-secondary shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-brand-dark dark:hover:text-white'
+            ? 'bg-white dark:bg-brand-dark text-brand-secondary shadow-sm'
+            : 'text-gray-500 dark:text-gray-400 hover:text-brand-dark dark:hover:text-white'
             }`}
         >
           <Gauge className="w-4 h-4" />
@@ -121,8 +123,8 @@ export default function PaceCalculator({ activity, distance, onPaceChange }: Pac
         <button
           onClick={() => setPaceMode('time')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${paceMode === 'time'
-              ? 'bg-white dark:bg-brand-dark text-brand-secondary shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-brand-dark dark:hover:text-white'
+            ? 'bg-white dark:bg-brand-dark text-brand-secondary shadow-sm'
+            : 'text-gray-500 dark:text-gray-400 hover:text-brand-dark dark:hover:text-white'
             }`}
         >
           <Timer className="w-4 h-4" />

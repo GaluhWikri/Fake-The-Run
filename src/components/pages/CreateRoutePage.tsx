@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import MapCanvas from '../MapCanvas';
 import DrawingTools from '../DrawingTools';
 import ActivitySelector from '../ActivitySelector';

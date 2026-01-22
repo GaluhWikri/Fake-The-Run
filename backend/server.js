@@ -16,7 +16,6 @@ const snap = new midtransClient.Snap({
   clientKey: process.env.MIDTRANS_CLIENT_KEY,
 });
 
-// Server key is loaded from .env file
 
 // Endpoint untuk membuat transaksi
 app.post('/api/create-transaction', async (req, res) => {

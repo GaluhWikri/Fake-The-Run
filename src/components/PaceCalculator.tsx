@@ -1,11 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Zap, Target, Timer, Gauge } from 'lucide-react';
+import { Clock, Zap, Target, Timer, Gauge, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface PaceCalculatorProps {
   activity: 'run' | 'bike';
   distance: number;
   onPaceChange: (pace: number) => void;
 }
+
+// Custom Number Input Component with styled arrows
+const NumberInput = ({
+  value,
+  onChange,
+  min = 0,
+  max,
+  label
+}: {
+  value: number;
+  onChange: (val: number) => void;
+  min?: number;
+  max?: number;
+  label: string;
+}) => {
+  const increment = () => {
+    if (max === undefined || value < max) {
+      onChange(value + 1);
+    }
+  };
+
+  const decrement = () => {
+    if (value > min) {
+      onChange(value - 1);
+    }
+  };
+
+  return (
+    <div className="relative flex items-center bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden">
+      <button
+        onClick={decrement}
+        className="p-3 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-gray-400 hover:text-brand-secondary"
+      >
+        <ChevronDown className="w-4 h-4" />
+      </button>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+        className="w-full py-3 bg-transparent text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none"
+        min={min}
+        max={max}
+      />
+      <button
+        onClick={increment}
+        className="p-3 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-gray-400 hover:text-brand-secondary"
+      >
+        <ChevronUp className="w-4 h-4" />
+      </button>
+      <span className="absolute right-10 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none">{label}</span>
+    </div>
+  );
+};
 
 export default function PaceCalculator({ activity, distance, onPaceChange }: PaceCalculatorProps) {
   const [paceMode, setPaceMode] = useState<'time' | 'pace'>('pace');
@@ -85,27 +138,19 @@ export default function PaceCalculator({ activity, distance, onPaceChange }: Pac
               Average Pace (min/km)
             </label>
             <div className="grid grid-cols-2 gap-3">
-              <div className="relative">
-                <input
-                  type="number"
-                  value={averagePace.minutes}
-                  onChange={(e) => setAveragePace(prev => ({ ...prev, minutes: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
-                  min="0"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">min</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={averagePace.seconds}
-                  onChange={(e) => setAveragePace(prev => ({ ...prev, seconds: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
-                  min="0"
-                  max="59"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">sec</span>
-              </div>
+              <NumberInput
+                value={averagePace.minutes}
+                onChange={(val) => setAveragePace(prev => ({ ...prev, minutes: val }))}
+                min={0}
+                label="min"
+              />
+              <NumberInput
+                value={averagePace.seconds}
+                onChange={(val) => setAveragePace(prev => ({ ...prev, seconds: Math.min(59, val) }))}
+                min={0}
+                max={59}
+                label="sec"
+              />
             </div>
           </div>
         ) : (
@@ -114,38 +159,26 @@ export default function PaceCalculator({ activity, distance, onPaceChange }: Pac
               Target Time
             </label>
             <div className="grid grid-cols-3 gap-2">
-              <div className="relative">
-                <input
-                  type="number"
-                  value={targetTime.hours}
-                  onChange={(e) => setTargetTime(prev => ({ ...prev, hours: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-3 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
-                  min="0"
-                />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">h</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={targetTime.minutes}
-                  onChange={(e) => setTargetTime(prev => ({ ...prev, minutes: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-3 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
-                  min="0"
-                  max="59"
-                />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">m</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={targetTime.seconds}
-                  onChange={(e) => setTargetTime(prev => ({ ...prev, seconds: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-3 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
-                  min="0"
-                  max="59"
-                />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">s</span>
-              </div>
+              <NumberInput
+                value={targetTime.hours}
+                onChange={(val) => setTargetTime(prev => ({ ...prev, hours: val }))}
+                min={0}
+                label="h"
+              />
+              <NumberInput
+                value={targetTime.minutes}
+                onChange={(val) => setTargetTime(prev => ({ ...prev, minutes: Math.min(59, val) }))}
+                min={0}
+                max={59}
+                label="m"
+              />
+              <NumberInput
+                value={targetTime.seconds}
+                onChange={(val) => setTargetTime(prev => ({ ...prev, seconds: Math.min(59, val) }))}
+                min={0}
+                max={59}
+                label="s"
+              />
             </div>
           </div>
         )}

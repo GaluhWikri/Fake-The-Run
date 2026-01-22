@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MapCanvas from '../MapCanvas';
 import DrawingTools from '../DrawingTools';
 import ActivitySelector from '../ActivitySelector';
@@ -6,6 +6,13 @@ import PaceCalculator from '../PaceCalculator';
 import RouteStats from '../RouteStats';
 import RouteForm from '../RouteForm';
 import { exportToGPX } from '../../utils/gpxExport';
+
+// Deklarasikan window.snap
+declare global {
+  interface Window {
+    snap: any;
+  }
+}
 
 interface RoutePoint {
   lat: number;
@@ -39,14 +46,74 @@ const CreateRoutePage = () => {
     return totalDistance;
   };
 
-  const handleExport = () => {
-    exportToGPX(routePoints, activity, routeDetails, pace);
+  const handleExport = async () => {
+    if (routePoints.length === 0) {
+      alert('Silakan buat rute terlebih dahulu.');
+      return;
+    }
 
-    setShowDownloadSuccess(true);
-    setTimeout(() => {
-      setShowDownloadSuccess(false);
-    }, 3000);
+    // PAYMENT GATEWAY DISABLED - Direct export without payment
+    // TODO: Re-enable payment gateway when ready
+    try {
+      exportToGPX(routePoints, activity, routeDetails, pace);
+
+      setShowDownloadSuccess(true);
+      setTimeout(() => {
+        setShowDownloadSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error saat export:', error);
+      alert('Terjadi kesalahan saat export. Silakan coba lagi.');
+    }
+
+    /* PAYMENT GATEWAY CODE - TEMPORARILY DISABLED
+    try {
+      // 1. Minta token transaksi dari backend
+      const response = await fetch('/api/create-transaction', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          route_name: routeDetails.name || 'GPX Route',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Gagal membuat transaksi');
+      }
+
+      const { token } = await response.json();
+
+      // 2. Tampilkan pop-up pembayaran Midtrans
+      window.snap.pay(token, {
+        onSuccess: function (result: any) {
+          console.log(result);
+          exportToGPX(routePoints, activity, routeDetails, pace);
+          setShowDownloadSuccess(true);
+          setTimeout(() => {
+            setShowDownloadSuccess(false);
+          }, 3000);
+        },
+        onPending: function (result: any) {
+          console.log(result);
+          alert('Menunggu pembayaran Anda!');
+        },
+        onError: function (result: any) {
+          console.log(result);
+          alert('Pembayaran gagal!');
+        },
+        onClose: function () {
+          alert('Anda menutup pop-up tanpa menyelesaikan pembayaran');
+        },
+      });
+    } catch (error) {
+      console.error('Error saat proses pembayaran:', error);
+      alert('Terjadi kesalahan. Silakan coba lagi.');
+    }
+    */
   };
+
 
   return (
     <main className="max-w-screen-2xl mx-auto p-4 sm:p-6 lg:p-8">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Clock, TrendingUp, Download, CheckCircle } from 'lucide-react';
+import { Route, Clock, TrendingUp, Download, CheckCircle, Activity } from 'lucide-react';
 
 interface RoutePoint {
   lat: number;
@@ -67,30 +67,30 @@ export default function RouteStats({ points, activity, pace, onExport, showDownl
     let cumulativeDistance = 0;
 
     const haversineDistance = (p1: RoutePoint, p2: RoutePoint): number => {
-        const R = 6371;
-        const dLat = (p2.lat - p1.lat) * Math.PI / 180;
-        const dLng = (p2.lng - p1.lng) * Math.PI / 180;
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+      const R = 6371;
+      const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+      const dLng = (p2.lng - p1.lng) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
     };
 
     points.forEach((point, index) => {
-        if (index > 0) {
-            cumulativeDistance += haversineDistance(points[index - 1], point);
-        }
+      if (index > 0) {
+        cumulativeDistance += haversineDistance(points[index - 1], point);
+      }
 
-        const progress = cumulativeDistance / totalDistance;
-        const hillEffect = hillAmplitude * Math.sin(progress * numberOfHills * 2 * Math.PI);
-        const variationEffect = (hillAmplitude / 4) * Math.sin(progress * numberOfHills * 8 * Math.PI);
+      const progress = cumulativeDistance / totalDistance;
+      const hillEffect = hillAmplitude * Math.sin(progress * numberOfHills * 2 * Math.PI);
+      const variationEffect = (hillAmplitude / 4) * Math.sin(progress * numberOfHills * 8 * Math.PI);
 
-        let currentElevation = baseElevation + hillEffect + variationEffect;
-        currentElevation = Math.max(20, currentElevation);
+      let currentElevation = baseElevation + hillEffect + variationEffect;
+      currentElevation = Math.max(20, currentElevation);
 
-        if (lastElevation !== -1 && currentElevation > lastElevation) {
-            elevationGain += currentElevation - lastElevation;
-        }
-        lastElevation = currentElevation;
+      if (lastElevation !== -1 && currentElevation > lastElevation) {
+        elevationGain += currentElevation - lastElevation;
+      }
+      lastElevation = currentElevation;
     });
 
     return Math.round(elevationGain);
@@ -101,57 +101,70 @@ export default function RouteStats({ points, activity, pace, onExport, showDownl
   const elevation = calculateElevationGain();
 
   return (
-    <div className="bg-brand-light/50 dark:bg-brand-dark/50 rounded-lg p-4 shadow-inner">
-      <div className="flex items-center justify-between mb-4">
-        <div className="relative">
-          <button
-            onClick={onExport}
-            disabled={points.length === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-brand-secondary text-white rounded-full text-sm font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-          >
-            <Download className="w-4 h-4" />
-            Export GPX
-          </button>
+    <div className="space-y-4">
+      {/* Export Button - Prominent */}
+      <div className="relative">
+        <button
+          onClick={onExport}
+          disabled={points.length === 0}
+          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-brand-secondary to-brand-primary text-white rounded-xl font-semibold shadow-lg shadow-brand-secondary/25 hover:shadow-xl hover:shadow-brand-secondary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-300 transform hover:scale-[1.02] disabled:hover:scale-100"
+        >
+          <Download className="w-5 h-5" />
+          <span>Export GPX File</span>
+        </button>
 
-          {showDownloadSuccess && (
-            <div className="absolute top-full right-0 mt-2 bg-green-500 text-white px-3 py-1.5 rounded-full shadow-lg text-xs font-medium flex items-center gap-2 animate-bounce z-10">
-              <CheckCircle className="w-4 h-4" />
-              GPX Downloaded!
-            </div>
-          )}
-        </div>
+        {showDownloadSuccess && (
+          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium flex items-center gap-2 animate-bounce z-10 whitespace-nowrap">
+            <CheckCircle className="w-4 h-4" />
+            GPX Downloaded Successfully!
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-black/20">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <Route className="w-4 h-4 text-brand-secondary" />
-            <span className="text-xs text-brand-secondary dark:text-gray-300">Distance</span>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Distance */}
+        <div className="group p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/10 border border-blue-100 dark:border-blue-800/30 hover:shadow-md transition-all">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-1.5 bg-blue-500/10 rounded-lg">
+              <Route className="w-4 h-4 text-blue-500" />
+            </div>
+            <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Distance</span>
           </div>
-          <div className="text-lg font-semibold text-brand-dark dark:text-brand-light">{formattedDistance} km</div>
+          <div className="text-xl font-bold text-blue-700 dark:text-blue-300">{formattedDistance} <span className="text-sm font-normal">km</span></div>
         </div>
 
-        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-black/20">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <Clock className="w-4 h-4 text-brand-secondary" />
-            <span className="text-xs text-brand-secondary dark:text-gray-300">Est. Time</span>
+        {/* Time */}
+        <div className="group p-4 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-800/10 border border-purple-100 dark:border-purple-800/30 hover:shadow-md transition-all">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-1.5 bg-purple-500/10 rounded-lg">
+              <Clock className="w-4 h-4 text-purple-500" />
+            </div>
+            <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Est. Time</span>
           </div>
-          <div className="text-lg font-semibold text-brand-dark dark:text-brand-light">{estimatedTime}</div>
+          <div className="text-xl font-bold text-purple-700 dark:text-purple-300">{estimatedTime}</div>
         </div>
 
-        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-black/20">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <TrendingUp className="w-4 h-4 text-brand-secondary" />
-            <span className="text-xs text-brand-secondary dark:text-gray-300">Elevation</span>
+        {/* Elevation */}
+        <div className="group p-4 rounded-xl bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 border border-green-100 dark:border-green-800/30 hover:shadow-md transition-all">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-1.5 bg-green-500/10 rounded-lg">
+              <TrendingUp className="w-4 h-4 text-green-500" />
+            </div>
+            <span className="text-xs font-medium text-green-600 dark:text-green-400">Elevation</span>
           </div>
-          <div className="text-lg font-semibold text-brand-dark dark:text-brand-light">{elevation} m</div>
+          <div className="text-xl font-bold text-green-700 dark:text-green-300">{elevation} <span className="text-sm font-normal">m</span></div>
         </div>
 
-        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-black/20">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <span className="text-xs text-brand-secondary dark:text-gray-300">Activity</span>
+        {/* Activity */}
+        <div className="group p-4 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/10 border border-orange-100 dark:border-orange-800/30 hover:shadow-md transition-all">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-1.5 bg-orange-500/10 rounded-lg">
+              <Activity className="w-4 h-4 text-orange-500" />
+            </div>
+            <span className="text-xs font-medium text-orange-600 dark:text-orange-400">Activity</span>
           </div>
-          <div className="text-lg font-semibold text-brand-dark dark:text-brand-light capitalize">{activity}</div>
+          <div className="text-xl font-bold text-orange-700 dark:text-orange-300 capitalize">{activity}</div>
         </div>
       </div>
     </div>

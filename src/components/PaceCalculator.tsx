@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Zap, Target } from 'lucide-react';
+import { Clock, Zap, Target, Timer, Gauge } from 'lucide-react';
 
 interface PaceCalculatorProps {
   activity: 'run' | 'bike';
@@ -52,126 +52,144 @@ export default function PaceCalculator({ activity, distance, onPaceChange }: Pac
   };
 
   return (
-    <div className="bg-brand-light/50 dark:bg-brand-dark/50 rounded-lg p-4 shadow-inner">
+    <div className="space-y-4">
       {/* Mode Toggle */}
-      <div className="flex mb-4 bg-white/50 dark:bg-black/20 rounded-lg p-1">
+      <div className="flex p-1 bg-gray-100 dark:bg-white/5 rounded-xl">
         <button
           onClick={() => setPaceMode('pace')}
-          className={`flex-1 py-2 px-3 rounded-md text-xs font-medium transition-colors ${
-            paceMode === 'pace'
-              ? 'bg-brand-light dark:bg-brand-dark text-brand-dark dark:text-brand-light shadow-sm'
-              : 'text-brand-secondary dark:text-gray-300 hover:text-brand-dark dark:hover:text-white'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${paceMode === 'pace'
+              ? 'bg-white dark:bg-brand-dark text-brand-secondary shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-brand-dark dark:hover:text-white'
+            }`}
         >
+          <Gauge className="w-4 h-4" />
           Set Pace
         </button>
         <button
           onClick={() => setPaceMode('time')}
-          className={`flex-1 py-2 px-3 rounded-md text-xs font-medium transition-colors ${
-            paceMode === 'time'
-              ? 'bg-brand-light dark:bg-brand-dark text-brand-dark dark:text-brand-light shadow-sm'
-              : 'text-brand-secondary dark:text-gray-300 hover:text-brand-dark dark:hover:text-white'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${paceMode === 'time'
+              ? 'bg-white dark:bg-brand-dark text-brand-secondary shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-brand-dark dark:hover:text-white'
+            }`}
         >
+          <Timer className="w-4 h-4" />
           Set Time
         </button>
       </div>
 
-      <div className="space-y-4">
+      {/* Input Section */}
+      <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-xl">
         {paceMode === 'pace' ? (
           <div>
-            <label className="block text-xs font-medium text-brand-dark dark:text-brand-light mb-2">
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">
               Average Pace (min/km)
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="number"
-                value={averagePace.minutes}
-                onChange={(e) => setAveragePace(prev => ({ ...prev, minutes: parseInt(e.target.value) || 0 }))}
-                className="w-full px-2 py-1.5 bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded text-sm text-brand-dark dark:text-brand-light"
-                placeholder="Min"
-                min="0"
-              />
-              <input
-                type="number"
-                value={averagePace.seconds}
-                onChange={(e) => setAveragePace(prev => ({ ...prev, seconds: parseInt(e.target.value) || 0 }))}
-                className="w-full px-2 py-1.5 bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded text-sm text-brand-dark dark:text-brand-light"
-                placeholder="Sec"
-                min="0"
-                max="59"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="relative">
+                <input
+                  type="number"
+                  value={averagePace.minutes}
+                  onChange={(e) => setAveragePace(prev => ({ ...prev, minutes: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-4 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
+                  min="0"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">min</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  value={averagePace.seconds}
+                  onChange={(e) => setAveragePace(prev => ({ ...prev, seconds: parseInt(e.target.value) || 0 }))}
+                  className="w-full px-4 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
+                  min="0"
+                  max="59"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">sec</span>
+              </div>
             </div>
           </div>
         ) : (
           <div>
-            <label className="block text-xs font-medium text-brand-dark dark:text-brand-light mb-2">
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">
               Target Time
             </label>
             <div className="grid grid-cols-3 gap-2">
+              <div className="relative">
                 <input
                   type="number"
                   value={targetTime.hours}
                   onChange={(e) => setTargetTime(prev => ({ ...prev, hours: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-2 py-1.5 bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded text-sm text-brand-dark dark:text-brand-light"
-                  placeholder="H"
+                  className="w-full px-3 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
                   min="0"
                 />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">h</span>
+              </div>
+              <div className="relative">
                 <input
                   type="number"
                   value={targetTime.minutes}
                   onChange={(e) => setTargetTime(prev => ({ ...prev, minutes: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-2 py-1.5 bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded text-sm text-brand-dark dark:text-brand-light"
-                  placeholder="M"
+                  className="w-full px-3 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
                   min="0"
                   max="59"
                 />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">m</span>
+              </div>
+              <div className="relative">
                 <input
                   type="number"
                   value={targetTime.seconds}
                   onChange={(e) => setTargetTime(prev => ({ ...prev, seconds: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-2 py-1.5 bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded text-sm text-brand-dark dark:text-brand-light"
-                  placeholder="S"
+                  className="w-full px-3 py-3 bg-white dark:bg-brand-dark border border-gray-200 dark:border-white/10 rounded-xl text-center text-lg font-semibold text-brand-dark dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:border-transparent"
                   min="0"
                   max="59"
                 />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">s</span>
+              </div>
             </div>
           </div>
         )}
+      </div>
 
-        <div className="space-y-2 pt-2">
-          <div className="flex items-center justify-between p-2 bg-white/50 dark:bg-black/20 rounded">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-brand-secondary" />
-              <span className="text-sm text-brand-dark dark:text-brand-light">Current Pace</span>
+      {/* Results */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between p-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <Clock className="w-4 h-4 text-blue-500" />
             </div>
-            <span className="text-sm font-medium text-brand-dark dark:text-brand-light">
-              {formatPace(pace)}/km
-            </span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Current Pace</span>
           </div>
-
-          <div className="flex items-center justify-between p-2 bg-white/50 dark:bg-black/20 rounded">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-brand-secondary" />
-              <span className="text-sm text-brand-dark dark:text-brand-light">Speed</span>
-            </div>
-            <span className="text-sm font-medium text-brand-dark dark:text-brand-light">
-              {getSpeedFromPace(pace)} km/h
-            </span>
-          </div>
-
-          {distance > 0 && (
-            <div className="flex items-center justify-between p-2 bg-brand-secondary/20 rounded border border-brand-secondary/50">
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-brand-secondary" />
-                <span className="text-sm text-brand-secondary font-medium">Total Time</span>
-              </div>
-              <span className="text-sm font-bold text-brand-secondary">
-                {calculateTotalTime()}
-              </span>
-            </div>
-          )}
+          <span className="text-sm font-bold text-brand-dark dark:text-white">
+            {formatPace(pace)}/km
+          </span>
         </div>
+
+        <div className="flex items-center justify-between p-3 bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <Zap className="w-4 h-4 text-purple-500" />
+            </div>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Speed</span>
+          </div>
+          <span className="text-sm font-bold text-brand-dark dark:text-white">
+            {getSpeedFromPace(pace)} km/h
+          </span>
+        </div>
+
+        {distance > 0 && (
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-brand-secondary/10 to-brand-primary/10 rounded-xl border border-brand-secondary/30">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-brand-secondary/20 rounded-lg">
+                <Target className="w-4 h-4 text-brand-secondary" />
+              </div>
+              <span className="text-sm font-medium text-brand-secondary">Total Time</span>
+            </div>
+            <span className="text-lg font-bold text-brand-secondary">
+              {calculateTotalTime()}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

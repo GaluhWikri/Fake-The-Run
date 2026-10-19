@@ -1,5 +1,6 @@
 import React from 'react';
 import { Route, Clock, TrendingUp, Download, CheckCircle, Activity } from 'lucide-react';
+import { elevationAt } from '../utils/gpxExport';
 
 interface RoutePoint {
   lat: number;
@@ -51,20 +52,15 @@ export default function RouteStats({ points, activity, pace, onExport, showDownl
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Menghitung total tanjakan agar konsisten dengan ekspor GPX
+  // Menghitung total tanjakan menggunakan model elevasi yang SAMA PERSIS
+  // dengan yang dipakai saat ekspor GPX (elevationAt di gpxExport.ts).
+  // Ini menjamin angka elevation gain yang ditampilkan di UI == yang dibaca
+  // Strava setelah upload file GPX.
   const calculateElevationGain = () => {
     if (points.length < 2) return 0;
 
     const totalDistance = calculateDistance();
     if (totalDistance === 0) return 0;
-
-    const baseElevation = 100.0;
-    const numberOfHills = Math.max(1, Math.floor(totalDistance / 2));
-    const hillAmplitude = 30.0;
-
-    let elevationGain = 0;
-    let lastElevation = -1;
-    let cumulativeDistance = 0;
 
     const haversineDistance = (p1: RoutePoint, p2: RoutePoint): number => {
       const R = 6371;
@@ -75,17 +71,17 @@ export default function RouteStats({ points, activity, pace, onExport, showDownl
       return R * c;
     };
 
+    let elevationGain = 0;
+    let lastElevation = -1;
+    let cumulativeDistance = 0;
+
     points.forEach((point, index) => {
       if (index > 0) {
         cumulativeDistance += haversineDistance(points[index - 1], point);
       }
 
       const progress = cumulativeDistance / totalDistance;
-      const hillEffect = hillAmplitude * Math.sin(progress * numberOfHills * 2 * Math.PI);
-      const variationEffect = (hillAmplitude / 4) * Math.sin(progress * numberOfHills * 8 * Math.PI);
-
-      let currentElevation = baseElevation + hillEffect + variationEffect;
-      currentElevation = Math.max(20, currentElevation);
+      const currentElevation = elevationAt(progress, totalDistance);
 
       if (lastElevation !== -1 && currentElevation > lastElevation) {
         elevationGain += currentElevation - lastElevation;

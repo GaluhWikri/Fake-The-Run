@@ -26,8 +26,25 @@ interface HomePageProps {
 const HomePage: React.FC<HomePageProps> = ({ onNavigateToCreate, theme }) => {
   return (
     <main className="overflow-x-hidden">
-      {/* ===== Hero Section — flat, no gradients ===== */}
-      <section className="relative pt-20 pb-28 md:pt-28 md:pb-40 bg-brand-light dark:bg-brand-dark border-b border-gray-200 dark:border-white/10">
+      {/* ===== Hero Section — flat, no gradient text, dot-grid background ===== */}
+      <section className="relative pt-20 pb-28 md:pt-28 md:pb-40 bg-brand-light dark:bg-brand-dark border-b border-gray-200 dark:border-white/10 overflow-hidden">
+        {/* Background dot-grid pattern — solid color, subtle, no gradient */}
+        <div
+          className="absolute inset-0 opacity-[0.15] dark:opacity-[0.07] pointer-events-none"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle, #E5533D 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+
+        {/* Background topographic-line accent — solid stroke rings */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="w-[600px] h-[600px] border border-brand-secondary/10 rounded-full"></div>
+          <div className="absolute inset-12 border border-brand-secondary/10 rounded-full"></div>
+          <div className="absolute inset-24 border border-brand-secondary/10 rounded-full"></div>
+        </div>
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Content */}
@@ -72,15 +89,16 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToCreate, theme }) => {
               </div>
             </div>
 
-            {/* Right Graphic — flat card */}
+            {/* Right Graphic — circular logo, no square */}
             <div className="hidden md:flex justify-center items-center">
-              <div className="relative w-80 h-80 lg:w-96 lg:h-96 bg-white dark:bg-brand-primary/40 rounded-3xl flex items-center justify-center shadow-xl border border-gray-200 dark:border-white/10">
-                <div className="absolute inset-4 border-2 border-dashed border-brand-secondary/30 rounded-2xl"></div>
+              <div className="relative w-80 h-80 lg:w-96 lg:h-96 bg-white dark:bg-brand-primary/40 rounded-full flex items-center justify-center shadow-xl border border-gray-200 dark:border-white/10">
+                {/* Inner dashed ring — circular */}
+                <div className="absolute inset-6 border-2 border-dashed border-brand-secondary/30 rounded-full"></div>
 
                 <img
                   src={theme === 'dark' ? '/lgooo.png' : '/lgoood.png'}
                   alt="Fake The Run Graphic"
-                  className="w-48 h-48 lg:w-64 lg:h-64"
+                  className="w-48 h-48 lg:w-64 lg:h-64 rounded-full object-cover"
                 />
 
                 {/* Floating badges — solid, no gradient */}

@@ -93,13 +93,17 @@ const mulberry32 = (seed: number) => {
 /**
  * Deterministic elevation model — MUST be kept in sync with RouteStats.tsx.
  *
- * Produces a gentle rolling profile that starts and ends near the same base
- * elevation so the net change over the route ≈ 0 (no artificial "always
- * climbing" trend). The amplitude and hill count are scaled to the route
- * distance so short city runs get a few small bumps (5–10 m) and longer
- * routes get proportionally more, but the per-km elevation gain stays in a
- * believable range (~3–8 m/km) rather than the 30 m amplitude + many hills
- * the old formula produced.
+ * Produces a near-flat, gently undulating profile suitable for typical
+ * urban/road runs. The profile oscillates around a fixed base elevation
+ * with very small amplitude so the total elevation gain stays modest and
+ * believable (a few metres per km), rather than accumulating into hundreds
+ * of metres as the previous multi-sine model did.
+ *
+ * Key properties:
+ *  - Mean elevation = baseElevation (no "always climbing" trend).
+ *  - Peak-to-peak swing ≤ ~4 m for short routes, ~6 m for long routes.
+ *  - Low frequency only — no high-frequency term that would make every
+ *    sampled point count as a separate "climb" in the gain accumulator.
  *
  * @param progress       0..1 fraction along the route
  * @param totalDistanceKm total route distance in km
@@ -109,30 +113,22 @@ export const elevationAt = (
   progress: number,
   totalDistanceKm: number
 ): number => {
-  // Base elevation — a modest, stable value. Kept low so gains are realistic
-  // for typical urban/flat runs rather than alpine climbs.
-  const baseElevation = 50.0;
+  // Stable base elevation for flat urban terrain.
+  const baseElevation = 45.0;
 
-  // Hill count: one hill every ~3 km (was every 2 km). Fewer hills = smaller
-  // total gain accumulation. Minimum 1 so very short routes still vary.
-  const numberOfHills = Math.max(1, Math.round(totalDistanceKm / 3));
+  // Amplitude scales mildly with distance: short routes ~2 m (one small bump),
+  // longer routes up to ~5 m (still gentle). This keeps total gain in a
+  // believable range: ~4 m for a 1 km run, ~8-10 m for a 5 km, ~12-15 m for 10 km.
+  const amplitude = 1.5 + Math.min(3.5, totalDistanceKm * 0.35); // metres
+  const undulation = amplitude * Math.sin(progress * 2 * Math.PI);
 
-  // Hill amplitude: 8 m per hill (was 30 m). Combined with the lower hill
-  // count this keeps per-km gain in the 3–8 m range typical of flat terrain.
-  const hillAmplitude = 8.0;
+  // A tiny, slow secondary wave so the profile isn't a perfect single hump.
+  // Amplitude scales mildly too but stays small so it can't inflate the gain.
+  const secondaryAmp = 0.4 + Math.min(0.8, totalDistanceKm * 0.08);
+  const secondary = secondaryAmp * Math.sin(progress * 4 * Math.PI + 1.3);
 
-  // Primary rolling hills — full oscillation, mean 0, starts/ends at base.
-  const hillEffect = hillAmplitude * Math.sin(progress * numberOfHills * 2 * Math.PI);
-
-  // Secondary micro-variation — smaller, higher frequency, also mean 0.
-  const variationEffect = (hillAmplitude / 3) * Math.sin(progress * numberOfHills * 6 * Math.PI);
-
-  // Tiny rolling noise via a fixed sin combo (deterministic, no RNG) so the
-  // profile looks natural rather than perfectly periodic.
-  const noise = 1.5 * Math.sin(progress * 47 * Math.PI + 0.7);
-
-  const elevation = baseElevation + hillEffect + variationEffect + noise;
-  return Math.max(2, elevation);
+  const elevation = baseElevation + undulation + secondary;
+  return Math.max(0, elevation);
 };
 
 /**

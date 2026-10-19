@@ -91,20 +91,48 @@ const mulberry32 = (seed: number) => {
 };
 
 /**
- * Deterministic elevation model — MUST be kept in sync with RouteStats.tsx
- * (same base, hill amplitude, hill count formula). Returns the elevation
- * (metres) at a given fractional progress 0..1 along the route.
+ * Deterministic elevation model — MUST be kept in sync with RouteStats.tsx.
+ *
+ * Produces a gentle rolling profile that starts and ends near the same base
+ * elevation so the net change over the route ≈ 0 (no artificial "always
+ * climbing" trend). The amplitude and hill count are scaled to the route
+ * distance so short city runs get a few small bumps (5–10 m) and longer
+ * routes get proportionally more, but the per-km elevation gain stays in a
+ * believable range (~3–8 m/km) rather than the 30 m amplitude + many hills
+ * the old formula produced.
+ *
+ * @param progress       0..1 fraction along the route
+ * @param totalDistanceKm total route distance in km
+ * @returns elevation in metres (always ≥ 0)
  */
 export const elevationAt = (
   progress: number,
   totalDistanceKm: number
 ): number => {
-  const baseElevation = 100.0;
-  const numberOfHills = Math.max(1, Math.floor(totalDistanceKm / 2));
-  const hillAmplitude = 30.0;
+  // Base elevation — a modest, stable value. Kept low so gains are realistic
+  // for typical urban/flat runs rather than alpine climbs.
+  const baseElevation = 50.0;
+
+  // Hill count: one hill every ~3 km (was every 2 km). Fewer hills = smaller
+  // total gain accumulation. Minimum 1 so very short routes still vary.
+  const numberOfHills = Math.max(1, Math.round(totalDistanceKm / 3));
+
+  // Hill amplitude: 8 m per hill (was 30 m). Combined with the lower hill
+  // count this keeps per-km gain in the 3–8 m range typical of flat terrain.
+  const hillAmplitude = 8.0;
+
+  // Primary rolling hills — full oscillation, mean 0, starts/ends at base.
   const hillEffect = hillAmplitude * Math.sin(progress * numberOfHills * 2 * Math.PI);
-  const variationEffect = (hillAmplitude / 4) * Math.sin(progress * numberOfHills * 8 * Math.PI);
-  return Math.max(20, baseElevation + hillEffect + variationEffect);
+
+  // Secondary micro-variation — smaller, higher frequency, also mean 0.
+  const variationEffect = (hillAmplitude / 3) * Math.sin(progress * numberOfHills * 6 * Math.PI);
+
+  // Tiny rolling noise via a fixed sin combo (deterministic, no RNG) so the
+  // profile looks natural rather than perfectly periodic.
+  const noise = 1.5 * Math.sin(progress * 47 * Math.PI + 0.7);
+
+  const elevation = baseElevation + hillEffect + variationEffect + noise;
+  return Math.max(2, elevation);
 };
 
 /**
